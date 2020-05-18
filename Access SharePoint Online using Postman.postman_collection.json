@@ -1,0 +1,1743 @@
+{
+	"info": {
+		"_postman_id": "bcc77e95-06e5-47af-b9c9-10a6a0eec789",
+		"name": "Access SharePoint Online using Postman",
+		"description": "More details are here\nhttp://www.ktskumar.com/2017/01/access-sharepoint-online-using-postman/\n\nRefer\nhttps://bloggerbrij.blogspot.com/\n\nRefre\nhttps://docs.microsoft.com/en-us/sharepoint/dev/general-development/role-inheritance-elevation-of-privilege-and-password-changes-in-sharepoint?redirectedfrom=MSDN\n\nUnderstanding SharePoint’s REST and Search API Part 1 – Selecting Items\nhttp://michaelsoriano.com/understanding-sharepoint-rest-api-part-1-selecting-items/",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Retrieve the Tenant ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://TENANT-NAME.sharepoint.com/_vti_bin/client.svc/",
+					"protocol": "https",
+					"host": [
+						"TENANT-NAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"_vti_bin",
+						"client.svc",
+						""
+					]
+				},
+				"description": "Retrieve the Tenant ID"
+			},
+			"response": []
+		},
+		{
+			"name": "Generate the Access Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b85b8561-0f11-436f-b077-b9d6e1b7d5c0",
+						"exec": [
+							"var json = JSON.parse(responseBody);",
+							"console.log(json.access_token);",
+							"postman.setEnvironmentVariable(\"AccessToken\", json.access_token);",
+							"postman.setEnvironmentVariable(\"TokenType\", json.token_type);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{ClientID}}@{{TenantID}}",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{ClientSecret}}",
+							"type": "text"
+						},
+						{
+							"key": "resource",
+							"value": "{{resource}}/{{SiteDomain}}@{{TenantID}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://accounts.accesscontrol.windows.net/{{TenantID}}/tokens/OAuth/2 ",
+					"protocol": "https",
+					"host": [
+						"accounts",
+						"accesscontrol",
+						"windows",
+						"net"
+					],
+					"path": [
+						"{{TenantID}}",
+						"tokens",
+						"OAuth",
+						"2 "
+					]
+				},
+				"description": "Generate the Access Token"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Web Title",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{TokenType}} {{AccessToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json; odata=verbose",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web?$select=*",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"web"
+					],
+					"query": [
+						{
+							"key": "$select",
+							"value": "*"
+						}
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Role Definitions",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json; odata=verbose",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/roledefinitions",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"web",
+						"roledefinitions"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Role Definitions By Name",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json; odata=verbose",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/roledefinitions/getbyname('Limited Access')",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"web",
+						"roledefinitions",
+						"getbyname('Limited Access')"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Role Assignments",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json; odata=verbose",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}_api/web/roleassignments",
+					"host": [
+						"{{SiteHostUrl}}_api"
+					],
+					"path": [
+						"web",
+						"roleassignments"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Role Assignments By Principal Id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json; odata=verbose",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/roleassignments/getbyprincipalid(16)/Member",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"roleassignments",
+						"getbyprincipalid(16)",
+						"Member"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Site Groups",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/sitegroups",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"sitegroups"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Site Users",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/siteusers",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"siteusers"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Site User By Email ID",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/siteusers/getbyemail('pankaj.surti@va.gov')",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"siteusers",
+						"getbyemail('pankaj.surti@va.gov')"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Site Groups By Name",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/sitegroups/getbyname('Site Provisioning Dev Owners')",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"sitegroups",
+						"getbyname('Site Provisioning Dev Owners')"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Group by group id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{TokenType}} {{AccessToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json; odata=verbose",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/sitegroups(6)",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"sitegroups(6)"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves all lists on a site",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists?$select=Title,Id",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"lists"
+					],
+					"query": [
+						{
+							"key": "$select",
+							"value": "Title,Id"
+						}
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves a single list's metadata",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('Documents')",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"lists",
+						"getbytitle('Documents')"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Getting the total items in a list",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('Documents')/ItemCount",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"lists",
+						"getbytitle('Documents')",
+						"ItemCount"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Getting attachments for a list item",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('TestPowerApps')/items(1)/AttachmentFiles",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('TestPowerApps')",
+						"items(1)",
+						"AttachmentFiles"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Getting fields for a list",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('Documents')/fields",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"lists",
+						"getbytitle('Documents')",
+						"fields"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Getting forms for a list",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('TestPowerApps')/forms",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('TestPowerApps')",
+						"forms"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Getting UserCustomActions for a list",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('TestPowerApps')/UserCustomActions",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('TestPowerApps')",
+						"UserCustomActions"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Getting InformationRightsManagementSettings for a list",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('TestPowerApps')/InformationRightsManagementSettings",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('TestPowerApps')",
+						"InformationRightsManagementSettings"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Getting EventReceivers for a list",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('TestPowerApps')/EventReceivers",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('TestPowerApps')",
+						"EventReceivers"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Selecting all items, all columns",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('TestPowerApps')/Items?$select=*",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('TestPowerApps')",
+						"Items"
+					],
+					"query": [
+						{
+							"key": "$select",
+							"value": "*"
+						}
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Role Assignments",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('TestPowerApps')/Items?$expand=RoleAssignments/Member",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('TestPowerApps')",
+						"Items"
+					],
+					"query": [
+						{
+							"key": "$expand",
+							"value": "RoleAssignments/Member"
+						}
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Selecting all items, custom columns",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('TestPowerApps')/Items?$select=ID,Title",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('TestPowerApps')",
+						"Items"
+					],
+					"query": [
+						{
+							"key": "$select",
+							"value": "ID,Title"
+						}
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Getting Current User information:",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/SP.UserProfiles.PeopleManager/GetMyProperties",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"SP.UserProfiles.PeopleManager",
+						"GetMyProperties"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves a single list's items",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('MasterSiteInventory')/items",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('MasterSiteInventory')",
+						"items"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves a single list's content types",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('MasterSiteInventory')/ContentTypes",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('MasterSiteInventory')",
+						"ContentTypes"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves a single list's data source",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('MasterSiteInventory')/datasource",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('MasterSiteInventory')",
+						"datasource"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves a single list's default view",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('MasterSiteInventory')/defaultview",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('MasterSiteInventory')",
+						"defaultview"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves a single list's views",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('MasterSiteInventory')/views",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('MasterSiteInventory')",
+						"views"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves SiteGroups",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/SiteGroups?$select=Id,Title,*",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"SiteGroups"
+					],
+					"query": [
+						{
+							"key": "$select",
+							"value": "Id,Title,*"
+						}
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves Folders",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/Folders",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"web",
+						"Folders"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves Folders Files",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/Folders('m')/Files",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"web",
+						"Folders('m')",
+						"Files"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves GetFolderByServerRelativeUrl",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/GetFolderByServerRelativeUrl('Shared Documents')",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"web",
+						"GetFolderByServerRelativeUrl('Shared Documents')"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves GetFolderByServerRelativeUrl Files",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/GetFolderByServerRelativeUrl('Shared Documents/TEST')/files",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"web",
+						"GetFolderByServerRelativeUrl('Shared Documents",
+						"TEST')",
+						"files"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves GetFolderByServerRelativeUrl Files Copy",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/GetFolderByServerRelativeUrl('Shared Documents/TEST')/files",
+					"host": [
+						"{{SiteHostUrl}}"
+					],
+					"path": [
+						"_api",
+						"web",
+						"GetFolderByServerRelativeUrl('Shared Documents",
+						"TEST')",
+						"files"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves SiteGroups Users by Group Id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/Web/SiteGroups/GetById(5)/Users",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"Web",
+						"SiteGroups",
+						"GetById(5)",
+						"Users"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves SiteUsers",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/SiteUsers",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"SiteUsers"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves UserCustomActions",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/UserCustomActions",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"UserCustomActions"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves RoleAssignments",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/RoleAssignments",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"RoleAssignments"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves RoleAssignments Groups",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/RoleAssignments/Groups",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"RoleAssignments",
+						"Groups"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves RoleDefinitions",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/RoleDefinitions",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"RoleDefinitions"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves RoleDefinitions BasePermissions",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/RoleDefinitions(1073741825)/BasePermissions",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"RoleDefinitions(1073741825)",
+						"BasePermissions"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves a single list's Effective Base Permissions",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('MasterSiteInventory')/effectivebasepermissions",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('MasterSiteInventory')",
+						"effectivebasepermissions"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieves a single list item's RoleAssignments",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/lists/getbytitle('MasterSiteInventory')/items(38)?$expand=RoleAssignments/Member",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"lists",
+						"getbytitle('MasterSiteInventory')",
+						"items(38)"
+					],
+					"query": [
+						{
+							"key": "$expand",
+							"value": "RoleAssignments/Member"
+						}
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		},
+		{
+			"name": "Break Inheritance And Add Role Permissions Using REST API In SharePoint",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "{{TokenType}} {{AccessToken}}"
+					},
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json; odata=verbose"
+					}
+				],
+				"url": {
+					"raw": "{{SiteHostUrl}}/_api/web/lists/getbytitle('testBreakInheritance')/breakroleinheritance(false)",
+					"protocol": "https",
+					"host": [
+						"TENANTNAME",
+						"sharepoint",
+						"com"
+					],
+					"path": [
+						"sites",
+						"siteprovisioning-dev",
+						"_api",
+						"web",
+						"lists",
+						"getbytitle('testBreakInheritance')",
+						"breakroleinheritance(false)"
+					]
+				},
+				"description": "Get Web Title"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "f160be27-2d74-40bb-bda8-107b8383402d",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "965f680a-02c5-4dae-a559-1202f077dce1",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "8ca89cd2-da8b-40a1-b0b2-9e23c5b81b03",
+			"key": "TenantID",
+			"value": "TENANT-ID",
+			"type": "string"
+		},
+		{
+			"id": "f81fca7c-a7e1-4d78-94fa-96cd2884cd5e",
+			"key": "SiteHostUrl",
+			"value": "https://TENANT-NAME.sharepoint.com/sites/SITE-NAME",
+			"type": "string"
+		},
+		{
+			"id": "771ca171-2366-4c6b-a341-344d32491ce5",
+			"key": "ClientID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "6caaa4af-64e9-4b48-979b-c4d4630759fa",
+			"key": "ClientSecret",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"id": "3c3dd2c4-06fe-452d-a76d-d389577d7397",
+			"key": "resource",
+			"value": "00000003-0000-0ff1-ce00-000000000000",
+			"type": "string"
+		},
+		{
+			"id": "4a1ab582-e711-4243-8edf-9c12a2ce0c56",
+			"key": "SiteDomain",
+			"value": "TENANT-NAME.sharepoint.com",
+			"type": "string"
+		}
+	]
+}
